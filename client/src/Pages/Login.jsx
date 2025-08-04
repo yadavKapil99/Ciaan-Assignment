@@ -4,17 +4,43 @@ import { useDispatch } from "react-redux";
 import { setUser } from "../store/userSlice";
 import axios from "axios";
 import url from "../constant";
-import studentImage from "../../assets/student.png"; 
+import studentImage from "../../assets/student.png";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const validateInputs = () => {
+    let isValid = true;
+    setEmailError("");
+    setPasswordError("");
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email.");
+      isValid = false;
+    }
+
+    if (password.length < 6) {
+      setPasswordError("Password must be at least 6 characters.");
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if (!validateInputs()) return;
+
     setLoading(true);
     try {
       const res = await axios.post(
@@ -28,7 +54,7 @@ export default function LoginPage() {
       dispatch(setUser(data.user));
       navigate("/");
     } catch (err) {
-      alert(err.message);
+      alert(err.message || "Login failed.");
     } finally {
       setLoading(false);
     }
@@ -36,6 +62,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center lg:flex-row bg-gradient-to-br from-[#0f0f0f] to-[#111827] text-white font-poppins">
+      {/* Left Side */}
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center relative overflow-hidden p-4">
         <div className="z-10 text-center space-y-6">
           <h1 className="text-4xl xl:text-6xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent animate-typing whitespace-nowrap overflow-hidden border-r-4 border-cyan-400 pr-4">
@@ -46,16 +73,14 @@ export default function LoginPage() {
           </p>
           <img
             src={studentImage}
-            alt="Student Got Job"
-            className="h-[400px] bg-gradient-to-br from-[#0f0f0f] to-[#111827] mx-auto "
+            alt="Student"
+            className="h-[400px] mx-auto"
           />
-
-
         </div>
         <div className="absolute w-full h-full bg-[radial-gradient(#2563eb33_1px,transparent_1px)] [background-size:20px_20px] opacity-10" />
       </div>
 
-      {/* Right Panel */}
+      {/* Right Side */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 py-10">
         <div className="w-full max-w-md bg-[#1f2937]/80 backdrop-blur-md p-8 sm:p-10 rounded-3xl border border-blue-800/40 shadow-2xl">
           <h2 className="text-2xl sm:text-3xl font-bold text-center text-cyan-400 mb-6 tracking-wide">
@@ -63,6 +88,7 @@ export default function LoginPage() {
           </h2>
 
           <form onSubmit={handleLogin} className="space-y-5">
+            {/* Email Field */}
             <div>
               <label className="block text-sm text-gray-400 mb-1">Email</label>
               <input
@@ -72,8 +98,12 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+              {emailError && (
+                <p className="text-red-400 text-xs mt-1">{emailError}</p>
+              )}
             </div>
 
+            {/* Password Field */}
             <div>
               <label className="block text-sm text-gray-400 mb-1">Password</label>
               <input
@@ -83,8 +113,12 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              {passwordError && (
+                <p className="text-red-400 text-xs mt-1">{passwordError}</p>
+              )}
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
