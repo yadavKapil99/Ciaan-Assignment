@@ -37,8 +37,8 @@ export const loginUser = async (req, res) => {
 
     res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: true, 
-    sameSite: "None", 
+    secure: isProduction, 
+    sameSite: isProduction ? "None" : "Lax", 
     maxAge: 7 * 24 * 60 * 60 * 1000, 
     });
 
@@ -106,8 +106,8 @@ export const signUp = async (req, res) => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "None" ,
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, 
     });
 
