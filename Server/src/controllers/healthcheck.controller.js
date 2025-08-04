@@ -1,7 +1,8 @@
 const healthcheck = async (req, res) => {
-  return res
-    .status(200)
-    .json(new ApiResponse(200, null, "Server is healthy ✅"));
+  return res.status(200).json({
+        success: true,
+        message: "Server is healthy ✅",
+      })
 };
 
 export { healthcheck };
