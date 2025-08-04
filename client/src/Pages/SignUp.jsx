@@ -22,6 +22,8 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -68,37 +70,42 @@ const SignUp = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const { bio, role } = formData;
+  e.preventDefault();
+  const { bio, role } = formData;
 
-    if (!bio || !role) {
-      setErrors({
-        ...errors,
-        bio: !bio ? "Bio is required." : "",
-        role: !role ? "Role is required." : "",
-      });
-      return;
-    }
+  if (!bio || !role) {
+    setErrors({
+      ...errors,
+      bio: !bio ? "Bio is required." : "",
+      role: !role ? "Role is required." : "",
+    });
+    return;
+  }
 
-    const formPayload = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value) formPayload.append(key, value);
+  setLoading(true); // 👈 start loading
+
+  const formPayload = new FormData();
+  Object.entries(formData).forEach(([key, value]) => {
+    if (value) formPayload.append(key, value);
+  });
+
+  try {
+    const response = await axios.post(`${url}/users/`, formPayload, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
 
-    try {
-      const response = await axios.post(`${url}/users/`, formPayload, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (response.status === 201) {
-        dispatch(setUser(response.data.user));
-        navigate("/");
-      }
-    } catch (error) {
-      console.error("Error signing up:", error);
-      alert("Sign up failed. Please try again.");
+    if (response.status === 201) {
+      dispatch(setUser(response.data.user));
+      navigate("/");
     }
-  };
+  } catch (error) {
+    console.error("Error signing up:", error);
+    alert("Sign up failed. Please try again.");
+  } finally {
+    setLoading(false); // 👈 stop loading
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0f0f] to-[#111827] text-white font-poppins px-4">
@@ -258,11 +265,15 @@ const SignUp = () => {
             </div>
 
             <button
-              type="submit"
-              className="w-full py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg font-semibold transition duration-300 transform hover:scale-105"
-            >
-              Sign Up
-            </button>
+  type="submit"
+  disabled={loading}
+  className={`w-full py-2 text-white rounded-lg font-semibold transition duration-300 transform 
+    ${loading ? 'bg-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-cyan-500 hover:to-blue-500 hover:scale-105'}
+  `}
+>
+  {loading ? "Signing Up..." : "Sign Up"}
+</button>
+
 
             <p className="text-xs sm:text-sm text-center text-gray-400 mt-6">
               Already have an account?{" "}

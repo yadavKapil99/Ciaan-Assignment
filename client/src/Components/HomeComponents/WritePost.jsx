@@ -10,6 +10,8 @@ const WritePost = ({ setWritePost }) => {
   const user = useSelector((state) => state.user.user);
   const [images, setImages] = useState([]);
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -33,29 +35,35 @@ const WritePost = ({ setWritePost }) => {
   };
 
   const handlePost = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("content", message);
+  if (loading) return; 
+  setLoading(true);
+  try {
+    const formData = new FormData();
+    formData.append("content", message);
 
-      // Append each image file
-      for (const img of images) {
-        formData.append("images", img.file);
-      }
-
-      const response = await axios.post(`${url}/posts/`, formData, { withCredentials: true });
-      if(response.data.success){
-        alert("Post created SuccessFully");
-        dispatch(setUser(response.data.user));
-        setMessage("");
-        setImages([]);
-        setWritePost(false);
-      }
-
-    } catch (error) {
-      console.error("Failed to submit post:", error);
-      alert("Something went wrong while posting.");
+    for (const img of images) {
+      formData.append("images", img.file);
     }
-  };
+
+    const response = await axios.post(`${url}/posts/`, formData, {
+      withCredentials: true,
+    });
+
+    if (response.data.success) {
+      alert("Post created Successfully");
+      dispatch(setUser(response.data.user));
+      setMessage("");
+      setImages([]);
+      setWritePost(false);
+    }
+  } catch (error) {
+    console.error("Failed to submit post:", error);
+    alert("Something went wrong while posting.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="flex flex-col items-center w-[600px] bg-white overflow-y-auto px-1 md:px-10 py-8 rounded-lg shadow-md">
@@ -126,16 +134,17 @@ const WritePost = ({ setWritePost }) => {
           </label>
 
           <button
-            onClick={handlePost}
-            disabled={message.trim() === "" && images.length === 0}
-            className={`px-4 py-2 rounded text-white transition 
-              ${message.trim() === "" && images.length === 0 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-indigo-600 hover:bg-indigo-700'}
-            `}
-          >
-            Post
-          </button>
+  onClick={handlePost}
+  disabled={loading || (message.trim() === "" && images.length === 0)}
+  className={`px-4 py-2 rounded text-white transition 
+    ${(message.trim() === "" && images.length === 0) || loading
+      ? 'bg-gray-400 cursor-not-allowed' 
+      : 'bg-indigo-600 hover:bg-indigo-700'}
+  `}
+>
+  {loading ? "Posting..." : "Post"}
+</button>
+
 
         </div>
       </div>

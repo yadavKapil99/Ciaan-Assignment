@@ -28,6 +28,9 @@ const Navbar = ({ toggleNavbar, isOpen }) => {
     try {
       await axios.post(`${url}/users/logout`, {}, { withCredentials: true });
       dispatch(setUser(null));
+      dispatch(setAllPosts(null));
+      dispatch(setLikedPosts([]));
+      dispatch(setCommentPosts([]));
       navigate('/login');
       if (toggleNavbar) toggleNavbar(); // close if mobile
     } catch (error) {
